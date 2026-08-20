@@ -1,0 +1,11 @@
+from .auth import router as auth_router
+from .farms import router as farms_router
+from .yard_sheets import router as yard_sheets_router
+from .recommendations import router as recommendations_router
+from .weather import router as weather_router
+from .disease_diagnosis import router as disease_diagnosis_router
+from .catalog import router as catalog_router
+from .policies import router as policies_router
+from .notifications import router as notifications_router
+from .admin import router as admin_router
+from .analytics import router as analytics_router

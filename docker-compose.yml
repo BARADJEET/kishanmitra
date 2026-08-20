@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  smart-crop-app:
+    build: .
+    container_name: smart_crop_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./smart_crop.db
+      - SECRET_KEY=smart-crop-production-secret-key-2026
+    volumes:
+      - ./backend/uploads:/app/backend/uploads
+    restart: unless-stopped

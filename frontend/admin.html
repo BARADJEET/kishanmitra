@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin & Audit Management Portal | Smart Crop Advisory</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/custom.css">
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex flex-col font-sans">
+
+    <!-- Admin Header -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md">
+                    <i data-lucide="shield" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-black tracking-tight text-white leading-none">Smart Crop Admin Portal</h1>
+                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Audited Operations Engine</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="/" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Farmer Portal
+                </a>
+                <span id="admin-user-email" class="text-xs text-slate-300 font-semibold bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+                    admin@smartcrop.gov.in
+                </span>
+                <button onclick="handleAdminLogout()" class="text-xs text-rose-400 hover:text-rose-300 font-bold">
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Subnav -->
+        <nav class="bg-slate-900/50 border-t border-slate-800/80 overflow-x-auto no-scrollbar">
+            <div class="max-w-7xl mx-auto px-4 flex items-center gap-2 py-1.5 text-xs font-semibold">
+                <button data-admin-tab="dashboard" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold transition flex items-center gap-1.5">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Analytics Overview
+                </button>
+                <button data-admin-tab="farmers" class="px-3.5 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <i data-lucide="users" class="w-4 h-4"></i> Registered Farmers
+                </button>
+                <button data-admin-tab="policies" class="px-3.5 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <i data-lucide="landmark" class="w-4 h-4"></i> Govt Schemes Manager
+                </button>
+                <button data-admin-tab="products" class="px-3.5 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <i data-lucide="package" class="w-4 h-4"></i> Products & Medicines
+                </button>
+                <button data-admin-tab="audits" class="px-3.5 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <i data-lucide="file-clock" class="w-4 h-4 text-amber-400"></i> Admin Audit Log
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ==================== TAB 1: ANALYTICS OVERVIEW ==================== -->
+        <section id="admin-tab-dashboard" class="admin-tab-content space-y-6">
+            <!-- KPI Cards Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow">
+                    <span class="text-xs text-slate-400 font-bold uppercase">Total Farmers</span>
+                    <span id="kpi-admin-farmers" class="text-3xl font-black text-white mt-1 block">0</span>
+                </div>
+                <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow">
+                    <span class="text-xs text-slate-400 font-bold uppercase">Active Farms</span>
+                    <span id="kpi-admin-farms" class="text-3xl font-black text-emerald-400 mt-1 block">0</span>
+                </div>
+                <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow">
+                    <span class="text-xs text-slate-400 font-bold uppercase">Total Acreage</span>
+                    <span id="kpi-admin-acreage" class="text-3xl font-black text-blue-400 mt-1 block">0.0 Ac</span>
+                </div>
+                <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow">
+                    <span class="text-xs text-slate-400 font-bold uppercase">ML Scans Executed</span>
+                    <span id="kpi-admin-scans" class="text-3xl font-black text-amber-400 mt-1 block">0</span>
+                </div>
+            </div>
+
+            <!-- Charts & Activity Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Crop Distribution Chart (1 Col) -->
+                <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow">
+                    <h3 class="text-sm font-extrabold text-white mb-4">Cultivated Crop Distribution</h3>
+                    <div class="h-56 relative">
+                        <canvas id="cropDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent ML Predictions (1 Col) -->
+                <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow">
+                    <h3 class="text-sm font-extrabold text-white mb-4">Recent ML Diagnoses</h3>
+                    <div id="admin-recent-preds" class="space-y-2.5"></div>
+                </div>
+
+                <!-- Recent Farmer Registrations (1 Col) -->
+                <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow">
+                    <h3 class="text-sm font-extrabold text-white mb-4">Recent Farmer Activity</h3>
+                    <div id="admin-recent-activity" class="space-y-2.5"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: FARMERS MANAGEMENT ==================== -->
+        <section id="admin-tab-farmers" class="admin-tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-black text-white">Registered Farmers Directory</h2>
+                    <p class="text-xs text-slate-400">View farmer profiles, account status, and farm land records</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-800/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                <th class="py-3 px-4">Farmer ID</th>
+                                <th class="py-3 px-4">Name / Contact</th>
+                                <th class="py-3 px-4">Location</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-farmers-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: POLICIES MANAGER ==================== -->
+        <section id="admin-tab-policies" class="admin-tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-black text-white">Government Schemes & Policy Database</h2>
+                    <p class="text-xs text-slate-400">Add, edit, or archive central and state subsidies with audit logging</p>
+                </div>
+                <button onclick="openAddPolicyModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add Scheme
+                </button>
+            </div>
+
+            <div id="admin-policies-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- ==================== TAB 4: PRODUCTS & MEDICINES ==================== -->
+        <section id="admin-tab-products" class="admin-tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-black text-white">Verified Agrochemicals & Solutions Catalog</h2>
+                    <p class="text-xs text-slate-400">Maintain fertilizers, bio-pesticides, dosage guidelines and market prices</p>
+                </div>
+                <button onclick="openAddProductModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add Product
+                </button>
+            </div>
+
+            <div id="admin-products-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- ==================== TAB 5: ADMIN AUDIT LOG ==================== -->
+        <section id="admin-tab-audits" class="admin-tab-content hidden space-y-6">
+            <div>
+                <h2 class="text-xl font-black text-white flex items-center gap-2">
+                    <i data-lucide="file-clock" class="w-5 h-5 text-amber-400"></i> Admin Audit & Change History
+                </h2>
+                <p class="text-xs text-slate-400">Tamper-evident audit trail recording every administrative creation, modification, and deletion</p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-800/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                <th class="py-3 px-4">Timestamp</th>
+                                <th class="py-3 px-4">Admin Email</th>
+                                <th class="py-3 px-4">Target Entity</th>
+                                <th class="py-3 px-4">Action</th>
+                                <th class="py-3 px-4">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-audit-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative text-slate-100">
+            <h3 class="text-xl font-black text-white">Admin Authentication Required</h3>
+            <p class="text-xs text-slate-400 mt-1">Please enter administrator credentials to manage agricultural records.</p>
+
+            <form onsubmit="handleAdminLogin(event)" class="mt-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Admin Email</label>
+                    <input type="email" id="admin-login-email" value="admin@smartcrop.gov.in" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Password</label>
+                    <input type="password" id="admin-login-password" value="Admin@123" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+                    Authenticate as Admin
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Policy Modal -->
+    <div id="add-policy-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-black text-white">Add Government Policy</h3>
+                <button onclick="closeAddPolicyModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleAddPolicySubmit(event)" class="mt-4 space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Policy Title</label>
+                    <input type="text" id="pol-title" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Scheme Code/Name</label>
+                        <input type="text" id="pol-scheme-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Category</label>
+                        <select id="pol-category" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                            <option value="Subsidy">Subsidy</option>
+                            <option value="Financial Aid">Financial Aid</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Equipment">Equipment</option>
+                            <option value="Soil Health">Soil Health</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Applicable State</label>
+                    <input type="text" id="pol-state" value="All India" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Description</label>
+                    <textarea id="pol-desc" required rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Eligibility Criteria</label>
+                    <textarea id="pol-eligibility" required rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Benefits Details</label>
+                    <textarea id="pol-benefits" required rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Official Portal URL</label>
+                    <input type="url" id="pol-url" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow mt-2">
+                    Save & Log Audit Record
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="add-product-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-black text-white">Add Agricultural Product</h3>
+                <button onclick="closeAddProductModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleAddProductSubmit(event)" class="mt-4 space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Product Name</label>
+                    <input type="text" id="prod-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Category</label>
+                        <select id="prod-category" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                            <option value="Bio-Pesticide">Bio-Pesticide</option>
+                            <option value="Fungicide">Fungicide</option>
+                            <option value="Insecticide">Insecticide</option>
+                            <option value="Fertilizer">Fertilizer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Manufacturer</label>
+                        <input type="text" id="prod-mfr" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Active Ingredient</label>
+                    <input type="text" id="prod-ai" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Dosage & Application Instructions</label>
+                    <textarea id="prod-dosage" required rows="2" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Suitable Crops</label>
+                        <input type="text" id="prod-crops" placeholder="Tomato, Cotton, Wheat" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Estimated Price</label>
+                        <input type="text" id="prod-price" placeholder="Rs. 350 / 500g" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs text-white">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow mt-2">
+                    Save Product Record
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/admin.js"></script>
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Crop Advisory System | Digital Agricultural Assistant</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/static/css/custom.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Global Header -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-700 to-green-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
+                    <i data-lucide="sprout" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black tracking-tight text-slate-900 leading-none" data-i18n="app_title">Smart Crop Advisory</h1>
+                    <span class="text-[10px] font-bold text-emerald-700 tracking-wider uppercase">Digital Kisan Assistant</span>
+                </div>
+            </div>
+
+            <!-- Language Switcher & Controls -->
+            <div class="flex items-center gap-3">
+                <!-- Language Selector -->
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
+                    <button onclick="setLanguage('en')" data-lang="en" class="lang-btn px-2.5 py-1 rounded-lg transition font-medium">EN</button>
+                    <button onclick="setLanguage('hi')" data-lang="hi" class="lang-btn px-2.5 py-1 rounded-lg transition font-medium">हिंदी</button>
+                    <button onclick="setLanguage('gu')" data-lang="gu" class="lang-btn px-2.5 py-1 rounded-lg transition font-medium">ગુજરાતી</button>
+                </div>
+
+                <!-- Admin Link -->
+                <a href="/admin" class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 px-3 py-1.5 rounded-xl transition border border-slate-200">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i> <span data-i18n="nav_admin">Admin</span>
+                </a>
+
+                <!-- User Auth Container -->
+                <div id="auth-status-container"></div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Bar -->
+        <nav class="bg-white border-t border-slate-100 overflow-x-auto no-scrollbar">
+            <div class="max-w-7xl mx-auto px-4 flex items-center gap-1 py-1 text-xs font-semibold">
+                <button data-nav-target="dashboard" class="px-3.5 py-2 rounded-xl text-emerald-700 bg-emerald-50 font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> <span data-i18n="nav_home">Dashboard</span>
+                </button>
+                <button data-nav-target="farms" class="px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="map-pin" class="w-4 h-4"></i> <span data-i18n="nav_farms">My Farms & Soil</span>
+                </button>
+                <button data-nav-target="yard" class="px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="clipboard-list" class="w-4 h-4"></i> <span data-i18n="nav_yard">Yard Sheet</span>
+                </button>
+                <button data-nav-target="recommend" class="px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-600"></i> <span data-i18n="nav_recommend">Crop Advisory (AI)</span>
+                </button>
+                <button data-nav-target="doctor" class="px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="scan" class="w-4 h-4 text-blue-600"></i> <span data-i18n="nav_doctor">Crop Doctor (ML)</span>
+                </button>
+                <button data-nav-target="schemes" class="px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="landmark" class="w-4 h-4"></i> <span data-i18n="nav_schemes">Govt Schemes</span>
+                </button>
+                <button data-nav-target="products" class="px-3.5 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 whitespace-nowrap">
+                    <i data-lucide="package" class="w-4 h-4"></i> <span data-i18n="nav_products">Solutions & Medicine</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ==================== VIEW 1: DASHBOARD ==================== -->
+        <section id="view-dashboard" class="view-section space-y-6">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-700 p-6 md:p-8 text-white shadow-xl">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-flex items-center gap-1.5 bg-emerald-950/40 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-emerald-200 border border-emerald-500/30">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Small & Marginal Farmer Assistant
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-black mt-3 leading-tight">
+                        <span data-i18n="hello">Namaste</span>, <span id="farmer-display-name">Ramesh Bhai Patel</span>!
+                    </h2>
+                    <p class="text-emerald-100 text-sm mt-2 leading-relaxed" data-i18n="tagline">
+                        Personalized agricultural intelligence combining soil, weather, ML diagnosis and government schemes.
+                    </p>
+
+                    <!-- Quick Action Buttons -->
+                    <div class="flex flex-wrap items-center gap-3 mt-6">
+                        <button onclick="switchTab('recommend')" class="bg-white text-emerald-800 hover:bg-emerald-50 px-4 py-2.5 rounded-xl font-bold text-xs shadow transition flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-emerald-600"></i> <span data-i18n="btn_get_advisory">Get Crop Recommendations</span>
+                        </button>
+                        <button onclick="switchTab('doctor')" class="bg-emerald-900/60 hover:bg-emerald-900 text-white px-4 py-2.5 rounded-xl font-bold text-xs border border-emerald-400/40 transition flex items-center gap-2">
+                            <i data-lucide="scan" class="w-4 h-4 text-emerald-300"></i> <span data-i18n="btn_upload_scan">Scan Crop Disease</span>
+                        </button>
+                        <button onclick="switchTab('schemes')" class="bg-emerald-900/60 hover:bg-emerald-900 text-white px-4 py-2.5 rounded-xl font-bold text-xs border border-emerald-400/40 transition flex items-center gap-2">
+                            <i data-lucide="landmark" class="w-4 h-4 text-emerald-300"></i> <span data-i18n="btn_view_schemes">Explore Subsidies</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weather & Live Stats Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Weather Actions Card (2 Cols) -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="cloud-sun" class="w-5 h-5 text-amber-500"></i>
+                            <span data-i18n="sec_action_advisories">Action-Oriented Weather Advisories</span>
+                        </h3>
+                        <span class="text-xs text-emerald-700 bg-emerald-100 font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span> Live Forecast
+                        </span>
+                    </div>
+
+                    <!-- Advisories Stream -->
+                    <div id="advisories-container" class="space-y-3">
+                        <div class="p-8 text-center glass-card rounded-2xl">
+                            <div class="inline-block w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                            <p class="text-xs text-slate-500 mt-2">Loading actionable agro-weather rules...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Weather Summary Widget (1 Col) -->
+                <div class="p-6 rounded-3xl bg-gradient-to-br from-sky-600 to-blue-800 text-white shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-sky-200 uppercase tracking-wide">Ahmedabad Zone</span>
+                            <i data-lucide="cloud-rain" class="w-6 h-6 text-sky-300"></i>
+                        </div>
+                        <div class="mt-4">
+                            <span id="widget-temp" class="text-4xl font-black">28.5°C</span>
+                            <span id="widget-cond" class="text-sm font-semibold text-sky-100 block mt-1">Partly Cloudy</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-sky-400/30 text-center text-xs">
+                        <div class="bg-sky-700/50 p-2 rounded-xl">
+                            <span class="text-sky-200 block text-[10px]">Humidity</span>
+                            <span id="widget-humidity" class="font-bold text-sm">62%</span>
+                        </div>
+                        <div class="bg-sky-700/50 p-2 rounded-xl">
+                            <span class="text-sky-200 block text-[10px]">Wind</span>
+                            <span id="widget-wind" class="font-bold text-sm">12 km/h</span>
+                        </div>
+                        <div class="bg-sky-700/50 p-2 rounded-xl">
+                            <span class="text-sky-200 block text-[10px]">Rain Chance</span>
+                            <span id="widget-rain-prob" class="font-bold text-sm">10%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Metrics Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-5 rounded-2xl glass-card border border-slate-200">
+                    <span class="text-xs text-slate-500 font-semibold block" data-i18n="kpi_farms">My Active Farms</span>
+                    <span id="kpi-total-farms" class="text-2xl font-black text-slate-900 mt-1 block">2</span>
+                </div>
+                <div class="p-5 rounded-2xl glass-card border border-slate-200">
+                    <span class="text-xs text-slate-500 font-semibold block" data-i18n="kpi_crops">Cultivated Crops</span>
+                    <span id="kpi-total-crops" class="text-2xl font-black text-emerald-700 mt-1 block">3</span>
+                </div>
+                <div class="p-5 rounded-2xl glass-card border border-slate-200">
+                    <span class="text-xs text-slate-500 font-semibold block">Soil Health Status</span>
+                    <span class="text-2xl font-black text-emerald-600 mt-1 block">Good (pH 7.1)</span>
+                </div>
+                <div class="p-5 rounded-2xl glass-card border border-slate-200">
+                    <span class="text-xs text-slate-500 font-semibold block">Active Subsidies</span>
+                    <span class="text-2xl font-black text-blue-600 mt-1 block">7 Eligible</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 2: FARMS & SOIL HEALTH ==================== -->
+        <section id="view-farms" class="view-section hidden space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900" data-i18n="nav_farms">My Farms & Soil Health</h2>
+                    <p class="text-sm text-slate-500">Manage digital land parcels, soil NPK matrix and irrigation types</p>
+                </div>
+                <button onclick="openAddFarmModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow flex items-center gap-2 transition">
+                    <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="btn_add_farm">Add New Farm</span>
+                </button>
+            </div>
+
+            <div id="farms-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+        <!-- ==================== VIEW 3: DIGITAL YARD SHEET ==================== -->
+        <section id="view-yard" class="view-section hidden space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900" data-i18n="nav_yard">Digital Yard Sheet / Farm Record</h2>
+                    <p class="text-sm text-slate-500">Track sown crops, variety, lifecycle stages (Sowing to Harvest) and yields</p>
+                </div>
+                <button onclick="openAddYardSheetModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow flex items-center gap-2 transition">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Add Crop Sowing Record
+                </button>
+            </div>
+
+            <div id="yard-sheets-container"></div>
+        </section>
+
+        <!-- ==================== VIEW 4: CROP RECOMMENDATIONS (AI) ==================== -->
+        <section id="view-recommend" class="view-section hidden space-y-6">
+            <div>
+                <h2 class="text-2xl font-black text-slate-900" data-i18n="nav_recommend">AI Crop Recommendation System</h2>
+                <p class="text-sm text-slate-500">Multi-criteria agronomic decision engine with explainable AI reasoning</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Input Parameters Form -->
+                <div class="p-6 rounded-3xl glass-card border border-slate-200 shadow-sm h-fit">
+                    <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+                        <i data-lucide="sliders" class="w-4 h-4 text-emerald-600"></i> Field Parameters
+                    </h3>
+
+                    <form id="recommendation-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Select Farm Profile</label>
+                            <select id="rec-farm-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500"></select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="soil_type">Soil Type</label>
+                                <select id="rec-soil-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                                    <option value="Black Soil">Black Soil</option>
+                                    <option value="Alluvial Soil">Alluvial Soil</option>
+                                    <option value="Red Soil">Red Soil</option>
+                                    <option value="Sandy Loam">Sandy Loam</option>
+                                    <option value="Clay Loam">Clay Loam</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="soil_ph">Soil pH</label>
+                                <input type="number" step="0.1" id="rec-soil-ph" value="6.8" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                            </div>
+                        </div>
+
+                        <!-- NPK Nutrients -->
+                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                            <span class="block text-xs font-bold text-slate-900 mb-2">Soil Nutrients (NPK kg/ha)</span>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-bold">N (Nitrogen)</label>
+                                    <input type="number" id="rec-n" value="70" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-center">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-bold">P (Phosphorus)</label>
+                                    <input type="number" id="rec-p" value="35" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-center">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-bold">K (Potassium)</label>
+                                    <input type="number" id="rec-k" value="45" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-center">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Season</label>
+                                <select id="rec-season" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                                    <option value="Kharif">Kharif (Monsoon)</option>
+                                    <option value="Rabi">Rabi (Winter)</option>
+                                    <option value="Zaid">Zaid (Summer)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="water_avail">Water Supply</label>
+                                <select id="rec-water" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                                    <option value="Moderate">Moderate</option>
+                                    <option value="Abundant">Abundant</option>
+                                    <option value="Scarce">Scarce / Low</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Run AI Recommendation
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Recommendation Results Display (2 Cols) -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-extrabold text-slate-900">Ranked Crop Recommendations</h3>
+                        <span class="text-xs text-slate-500 font-medium">Explainable Agronomic Output</span>
+                    </div>
+                    <div id="recommendations-results" class="space-y-4">
+                        <div class="p-12 text-center glass-card rounded-3xl border border-slate-200">
+                            <i data-lucide="sparkles" class="w-10 h-10 text-emerald-600 mx-auto mb-3"></i>
+                            <h4 class="font-extrabold text-slate-900 text-base">Personalized Advisory Ready</h4>
+                            <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">Select your farm or adjust soil parameters and click 'Run AI Recommendation' to view top ranked suitable crops with reasons and fertilizer plans.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 5: CROP DOCTOR (ML PLANT DIAGNOSIS) ==================== -->
+        <section id="view-doctor" class="view-section hidden space-y-6">
+            <div>
+                <h2 class="text-2xl font-black text-slate-900" data-i18n="nav_doctor">Crop Doctor (Plant Disease & Pest Vision)</h2>
+                <p class="text-sm text-slate-500">Upload a leaf photograph for instant computer vision pathology identification and verified treatments</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Image Upload & Camera Box -->
+                <div class="space-y-4">
+                    <div class="p-6 rounded-3xl glass-card border border-slate-200 text-center shadow-sm">
+                        <input type="file" id="crop-image-file-input" accept="image/*" class="hidden">
+                        
+                        <div onclick="document.getElementById('crop-image-file-input').click()" class="border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/40 rounded-2xl p-6 cursor-pointer transition">
+                            <i data-lucide="camera" class="w-10 h-10 text-emerald-600 mx-auto mb-2"></i>
+                            <span class="block text-sm font-extrabold text-slate-900">Upload or Snap Photo</span>
+                            <span class="text-[11px] text-slate-500 block mt-1">Supports JPG, PNG, WEBP from mobile camera or gallery</span>
+                        </div>
+
+                        <!-- Farm Selection -->
+                        <div class="mt-4 text-left">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Tag Farm Parcel (Optional)</label>
+                            <select id="scan-farm-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold"></select>
+                        </div>
+
+                        <!-- Scan Preview Container with Laser Animation -->
+                        <div id="scan-preview-container" class="hidden mt-4 relative rounded-2xl overflow-hidden border border-slate-200 scanner-container bg-slate-900">
+                            <img id="scan-preview-img" src="" alt="crop leaf" class="w-full h-48 object-cover opacity-90">
+                            <div id="scan-laser" class="scanner-laser hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Scans History -->
+                    <div class="p-5 rounded-3xl glass-card border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Recent Scans History</h4>
+                        <div id="scan-history-container" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <!-- Diagnosis & Prescription Result (2 Cols) -->
+                <div class="lg:col-span-2">
+                    <div id="scan-result-container">
+                        <div class="p-12 text-center glass-card rounded-3xl border border-slate-200">
+                            <i data-lucide="scan" class="w-12 h-12 text-blue-600 mx-auto mb-3"></i>
+                            <h4 class="font-extrabold text-slate-900 text-base">No Image Scanned Yet</h4>
+                            <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">Upload a clear photo of an infected leaf, stem, or fruit to run ML inference and receive instant disease identification, confidence scores, organic remedies, and chemical spray guidelines.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 6: GOVT SCHEMES & POLICIES ==================== -->
+        <section id="view-schemes" class="view-section hidden space-y-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900" data-i18n="nav_schemes">Government Schemes & Subsidies</h2>
+                    <p class="text-sm text-slate-500">Explore Central & State farmer welfare schemes, solar pump subsidies, and crop insurance</p>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="scheme-state-filter" onchange="loadSchemesView()" class="bg-white border border-slate-200 text-xs font-bold px-3 py-2 rounded-xl shadow-xs">
+                        <option value="">All States / All India</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Punjab">Punjab</option>
+                    </select>
+                    <select id="scheme-cat-filter" onchange="loadSchemesView()" class="bg-white border border-slate-200 text-xs font-bold px-3 py-2 rounded-xl shadow-xs">
+                        <option value="">All Categories</option>
+                        <option value="Subsidy">Subsidies</option>
+                        <option value="Financial Aid">Financial Aid</option>
+                        <option value="Insurance">Crop Insurance</option>
+                        <option value="Equipment">Farm Machinery</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="schemes-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+        <!-- ==================== VIEW 7: AGRI SOLUTIONS & PRODUCTS ==================== -->
+        <section id="view-products" class="view-section hidden space-y-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900" data-i18n="nav_products">Agricultural Solutions & Medicines</h2>
+                    <p class="text-sm text-slate-500">Verified database of bio-pesticides, fungicides, fertilizers, and dosage instructions</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <select id="product-cat-filter" onchange="loadProductsView()" class="bg-white border border-slate-200 text-xs font-bold px-3 py-2 rounded-xl shadow-xs">
+                        <option value="">All Categories</option>
+                        <option value="Bio-Pesticide">Bio-Pesticides</option>
+                        <option value="Fungicide">Fungicides</option>
+                        <option value="Fertilizer">Fertilizers</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <p>© 2026 Smart Crop Advisory System for Small and Marginal Farmers. Built for India Hackathon.</p>
+            <div class="flex items-center gap-4 font-semibold text-emerald-700">
+                <span>Multi-Language (EN/HI/GU)</span>
+                <span>•</span>
+                <span>Open-Meteo & ML Vision</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-black text-slate-900">Farmer Login</h3>
+            <p class="text-xs text-slate-500 mt-1">Access your personalized advisory, digital farm yard sheets and history.</p>
+
+            <form onsubmit="handleLoginSubmit(event)" class="mt-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Email / Phone</label>
+                    <input type="email" id="login-email" value="farmer@kisan.in" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                    <input type="password" id="login-password" value="Farmer@123" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                </div>
+                <div class="p-2.5 bg-emerald-50 rounded-xl text-[11px] text-emerald-800">
+                    <strong>Demo Credentials:</strong><br>
+                    Farmer: <code>farmer@kisan.in</code> / <code>Farmer@123</code><br>
+                    Admin: <code>admin@smartcrop.gov.in</code> / <code>Admin@123</code>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+                    Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Farm Modal -->
+    <div id="add-farm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAddFarmModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-black text-slate-900">Add New Farm Parcel</h3>
+            <p class="text-xs text-slate-500 mt-1">Register land area, location, soil characteristics and water source.</p>
+
+            <form onsubmit="handleAddFarmSubmit(event)" class="mt-5 space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Farm Name / Parcel Title</label>
+                    <input type="text" id="new-farm-name" placeholder="e.g. North Canal Field" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Land Area (Acres)</label>
+                        <input type="number" step="0.1" id="new-farm-area" value="2.5" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">State</label>
+                        <input type="text" id="new-farm-state" value="Gujarat" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">District</label>
+                        <input type="text" id="new-farm-district" value="Ahmedabad" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Soil Type</label>
+                        <select id="new-farm-soil" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                            <option value="Black Soil">Black Soil</option>
+                            <option value="Alluvial Soil">Alluvial Soil</option>
+                            <option value="Red Soil">Red Soil</option>
+                            <option value="Sandy Loam">Sandy Loam</option>
+                            <option value="Clay Loam">Clay Loam</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Irrigation System</label>
+                        <select id="new-farm-irrigation" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                            <option value="Drip">Drip Irrigation</option>
+                            <option value="Sprinkler">Sprinkler</option>
+                            <option value="Canal">Canal</option>
+                            <option value="Flood">Flood Irrigation</option>
+                            <option value="Rainfed">Rainfed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Water Availability</label>
+                        <select id="new-farm-water" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                            <option value="Moderate">Moderate</option>
+                            <option value="Abundant">Abundant</option>
+                            <option value="Scarce">Scarce</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow mt-2">
+                    Save Farm Record
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Yard Sheet Modal -->
+    <div id="add-yard-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="closeAddYardSheetModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-black text-slate-900">Add Crop Sowing Record</h3>
+            <p class="text-xs text-slate-500 mt-1">Log newly planted crops into your digital yard record.</p>
+
+            <form onsubmit="handleAddYardSheetSubmit(event)" class="mt-5 space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Select Farm</label>
+                    <select id="yard-farm-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold" required></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Crop Name</label>
+                        <input type="text" id="yard-crop-name" placeholder="e.g. Cotton / Wheat" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Variety</label>
+                        <input type="text" id="yard-crop-variety" placeholder="e.g. Bt RCH-659" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Cultivated Area (Acres)</label>
+                        <input type="number" step="0.1" id="yard-crop-area" value="1.5" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Season</label>
+                        <select id="yard-crop-season" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                            <option value="Kharif">Kharif</option>
+                            <option value="Rabi">Rabi</option>
+                            <option value="Zaid">Zaid</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Current Stage</label>
+                        <select id="yard-crop-stage" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                            <option value="Sowing">Sowing</option>
+                            <option value="Germination">Germination</option>
+                            <option value="Vegetative">Vegetative</option>
+                            <option value="Flowering">Flowering</option>
+                            <option value="Fruiting">Fruiting</option>
+                            <option value="Harvesting">Harvesting</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Expected Yield (kg)</label>
+                        <input type="number" id="yard-crop-yield" value="2000" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow mt-2">
+                    Save Yard Record
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
