@@ -70,3 +70,4 @@ python run.py
 The system uses a normalized relational architecture compatible with both SQLite (zero-setup out-of-the-box) and MySQL 8.0+:
 - `schema.sql` provides the complete MySQL DDL script.
 - For MySQL production, set: `DATABASE_URL="mysql+pymysql://user:password@localhost:3306/smart_crop_db"`
+"# kishanmitra" 
